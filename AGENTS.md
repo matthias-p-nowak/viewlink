@@ -18,14 +18,12 @@ name | purpose
 `docs/design.md` | system design and architecture
 `docs/decisions.md` | records design decision made during development
 
-
 ## Generated files
-For all generated files, execute the mentioned commands.
-
-name | command
---- | ---
-`viewlink.js` | `esbuild --bundle src/viewlink.ts --sourcemap --outdir=.`
-`main.css` | `sass src/main.scss:main.css`
+The user will start the required programs that will build:
+- `main.css` from `src/main.scss`
+- `demo.js` from `src/demo.ts`
+- `viewlink.js` from `src/viewlink.ts`
+Inspect that the modification time of the files have changed and if not tell the user to run the Visual Studio code tasks defined under `.vscode/tasks.json`
 
 # Preferences
 - Prefer simple solutions over theoretically elegant ones.
@@ -37,5 +35,6 @@ name | command
 # Abbreviations
 - "good" means the following
     - summarize the previous prompts and the prompt log and replace the section "Prompt log" in `docs/context.md`
+    - 
     - make a git commit with the summary of current status as the commit message
 

@@ -51,6 +51,7 @@
       "args": [
         "--bundle",
         "src/viewlink.ts",
+        "src/demo.ts",
         "--outdir=${workspaceFolder}",
         "--sourcemap",
         "--watch"

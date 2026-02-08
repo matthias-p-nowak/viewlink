@@ -1,17 +1,11 @@
 # Context
 
 ## Current request
-Implement the `index.php` routing change to use `$_SERVER['PATH_INFO']`.
+Add remarks how to build the generated files to architecture.md
 
 ## Prompt log
-- 2026-02-08: "add content and include the reference to viewlink.js"
-- 2026-02-08: "Please implement the code as described by the comment on src/viewlink.ts:6"
-- 2026-02-08: "Please implement the code as described by the comment on index.html:6"
-- 2026-02-08: "Please implement the code as described by the comment on index.html:6 ... insert baseurl = index.php"
-- 2026-02-08: "Please implement the code as described by the comment on index.html:6. The comment is: i need the meta baseURL tag and it should point to 'index.php' -->"
-- 2026-02-08: "PLEASE IMPLEMENT THIS PLAN: Implement `viewlink_invoke` in `src/viewlink.ts` with POST+JSON, URL resolution via `new URL(..., document.baseURI)`, response parsing/logging of `invoke`, throwing on failures, window exposure, docs updates, and required esbuild rebuild."
-- 2026-02-08: "PLEASE IMPLEMENT THIS PLAN: Move `Window` typing from `src/viewlink.ts` to `src/window.d.ts` and rebuild."
-- 2026-02-08: "I want demo.ts to be my demo functionality where i can declare a 'hello' function that uses the 'viewlink_invoke' function. In `index.html` i want a button.hello which has an onclick=hello. Add a basic index.php that handles Post for /hello and returns a json object with invoke=\"hello world\"."
-- 2026-02-08: "PLEASE IMPLEMENT THIS PLAN: Add Demo Layer (`demo.ts`), Hello Button, and PHP Endpoint at `index.php/hello`."
-- 2026-02-08: "No inputs were found in config file '/home/me/projects/ai-code/viewlink/src/tsconfig.json'. Specified 'include' paths were '[\"src\"]' and 'exclude' paths were '[]'."
-- 2026-02-08: "Please implement the code as described by the comment on index.php:7. The comment is: $_SERVER['PATH_INFO'] could be used instead"
+- 2026-02-08 summary:
+  - Built the core browser invocation flow in `src/viewlink.ts` (`viewlink_invoke` with JSON POST, URL resolution via `document.baseURI`, response parsing/logging, error handling, and `window` exposure), then moved global typings into `src/window.d.ts`.
+  - Wired the demo flow end-to-end: added `hello()` in `src/demo.ts`, added `.hello` button wiring in `index.html`, and implemented a minimal `/hello` JSON POST endpoint in `index.php` that returns `{"invoke":"hello world"}`.
+  - Updated base URL handling and static assets in the page (`<meta name="baseURL" content="index.php">`, favicon link, and `favicon.ico` dark-blue dot).
+  - Addressed TypeScript config/include issues and documented architecture/build expectations, including the explicit preference to stop running `esbuild` directly.

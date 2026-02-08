@@ -35,6 +35,6 @@ Inspect that the modification time of the files have changed and if not tell the
 # Abbreviations
 - "good" means the following
     - summarize the previous prompts and the prompt log and replace the section "Prompt log" in `docs/context.md`
-    - 
+    - git stage all modified files.
     - make a git commit with the summary of current status as the commit message
 

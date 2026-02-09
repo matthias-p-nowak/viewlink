@@ -13,9 +13,19 @@ The return from the server is handled by the invoke function.
 - `src/viewlinks.ts` contains the library functionality
 - `src/demo.ts` contains the example usage
 
+# Datastructures
+- `viewlink_handlers`
+    - private `Map<string, Map<string, event_handler>>` keyed first by event type and then by action name.
+    - the dispatcher registered per event type walks up from `event.target` looking for a `data-viewlink-action` attribute and runs the mapped handler for the first match.
+    - handlers are registered via `registerViewlinkHandler(eventType, action, handler)` which also ensures the document listener is attached.
+
 # Functions
+ - `registerViewlinkHandler(eventType, action, handler)`
+     - stores `handler` inside `viewlink_handlers[eventType][action]` and attaches a single document listener that delegates events with the matching `data-viewlink-action`.
 - `viewlink_invoke(path, json_obj)` 
     - uses POST to fetch a json object from `document.baseURI+path` with json_obj as the body and content-type application/json. 
     - it retrieves the response and parse it into a json object
     - it console.log the field `invoke`.
-        
+- `viewlink_onclick(event)`
+    - it is an eventlistener that currently console.logs.
+    - it is registered via `registerViewlinkHandler("click", "viewlink_onclick", viewlink_onclick)` so the dispatcher attaches it when the module loads.

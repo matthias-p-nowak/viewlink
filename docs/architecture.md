@@ -12,7 +12,7 @@
 - `src/viewlink.ts` defines and exports `viewlink_invoke(path, json_obj)` for POSTing JSON requests.
 - `src/viewlink.ts` resolves request URLs with `new URL(path, document.baseURI)`.
 - `src/viewlink.ts` attaches `viewlink_invoke` to `window` for direct browser-console and non-import usage.
-- `src/viewlink.ts` also exports `viewlink_onclick`, logs the event type/target, and attaches it as a document-level `"click"` listener for inspection-only interaction tracking.
+- `src/viewlink.ts` manages the private `viewlink_handlers` map and exposes `registerViewlinkHandler`, so document clicks (and future event types) are dispatched by `data-viewlink-action`; `viewlink_onclick` registers through the dispatcher and simply logs the event type/target.
 - `src/demo.ts` defines `hello()` and calls `viewlink_invoke("index.php/hello", {})`, then assigns it to `window.hello`.
 - `src/window.d.ts` defines global `Window` typings for `window.viewlink_invoke` and `window.hello`.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.

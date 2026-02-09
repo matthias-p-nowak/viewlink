@@ -1,8 +1,10 @@
-import { viewlink_invoke } from "./viewlink";
+import { registerViewlinkHandler, viewlink_invoke } from "./viewlink";
 
 export async function hello(): Promise<void> {
+    console.log("hello called");
     const result = await viewlink_invoke("index.php/hello", {});
     console.log(result);
 }
 
-window.hello = hello;
+registerViewlinkHandler("click", "hello", hello);
+console.log("demo loaded");

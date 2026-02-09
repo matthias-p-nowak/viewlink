@@ -26,31 +26,24 @@ export type ViewlinkEventHandler = (event: Event) => void;
 const viewlink_handlers = new Map<string, Map<string, ViewlinkEventHandler>>();
 const registeredListeners = new Set<string>();
 
-function ensureDispatcher(eventType: string): void {
-    if (registeredListeners.has(eventType)) {
+function handle_viewlink(event: Event): void {
+    const handlers = viewlink_handlers.get(event.type);
+    if (!handlers) {
         return;
     }
 
-    registeredListeners.add(eventType);
-    document.addEventListener(eventType, (event) => {
-        const handlers = viewlink_handlers.get(eventType);
-        if (!handlers) {
-            return;
-        }
-
-        let current: EventTarget | null = event.target;
-        while (current && current instanceof Element) {
-            const action = current.getAttribute("data-viewlink-action");
-            if (action) {
-                const handler = handlers.get(action);
-                if (handler) {
-                    handler(event);
-                    break;
-                }
+    let current: EventTarget | null = event.target;
+    while (current && current instanceof HTMLElement) {
+        const action = current.dataset.viewlink;
+        if (action) {
+            const handler = handlers.get(action);
+            if (handler) {
+                handler(event);
+                break;
             }
-            current = current.parentElement;
         }
-    });
+        current = current.parentElement;
+    }
 }
 
 export function registerViewlinkHandler(
@@ -63,9 +56,12 @@ export function registerViewlinkHandler(
         handlers = new Map<string, ViewlinkEventHandler>();
         viewlink_handlers.set(eventType, handlers);
     }
-
     handlers.set(action, handler);
-    ensureDispatcher(eventType);
+
+    if (!registeredListeners.has(eventType)) {
+        document.addEventListener(eventType, handle_viewlink);
+        registeredListeners.add(eventType);
+    }
 }
 
 export function viewlink_onclick(event: Event): void {

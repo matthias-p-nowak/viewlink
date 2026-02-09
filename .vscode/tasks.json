@@ -78,6 +78,15 @@
         "reveal": "always",
         "panel": "dedicated"
       }
+    },
+    {
+      "label": "run all",
+      "dependsOn": [
+        "start-php-server",
+        "compile typescripts",
+        "watch-scss"
+      ],
+      "dependsOrder": "parallel"
     }
   ]
 }

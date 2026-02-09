@@ -10,6 +10,8 @@
 - Never revert files.
 - Use `touch` to create new files.
 - Use the 'apply_patch' feature to change files.
+- Do not run `sass` - it will be run by the user.
+- Do not run `esbuild` - it will be run by the user.
 
 ## Relevant files
 name | purpose

@@ -12,15 +12,11 @@
 - `src/viewlink.ts` defines and exports `viewlink_invoke(path, json_obj)` for POSTing JSON requests.
 - `src/viewlink.ts` resolves request URLs with `new URL(path, document.baseURI)`.
 - `src/viewlink.ts` attaches `viewlink_invoke` to `window` for direct browser-console and non-import usage.
-- `src/viewlink.ts` manages the private `viewlink_handlers` map and exposes `registerViewlinkHandler`, so document clicks (and future event types) are dispatched by `data-viewlink-action`; `viewlink_onclick` registers through the dispatcher and simply logs the event type/target.
+- `src/viewlink.ts` manages the private `viewlink_handlers` map and exposes `registerViewlinkHandler`.
+- `src/viewlink.ts` defines a shared `handle_viewlink(event)` dispatcher that resolves handlers by `event.type`, walks up ancestor elements, and dispatches by `data-viewlink` (`element.dataset.viewlink`) with first-match semantics.
+- `src/viewlink.ts` ensures each event type is attached to `document` once, then reuses `handle_viewlink` for subsequent registrations.
 - `src/demo.ts` defines `hello()` and calls `viewlink_invoke("index.php/hello", {})`, then assigns it to `window.hello`.
 - `src/window.d.ts` defines global `Window` typings for `window.viewlink_invoke` and `window.hello`.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.
 - `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and returns `{"invoke":"hello world"}` as JSON.
-
-## Build remarks for generated files
-
-- Generated browser artifacts are `viewlink.js`, `viewlink.js.map`, `demo.js`, and `demo.js.map` in the project root.
-- Source files for these artifacts are `src/viewlink.ts` and `src/demo.ts`.
-- To validate/build TypeScript without running `esbuild`, run `tsc --project src/tsconfig.json --noEmit`.
-- If generated JavaScript artifacts are changed, keep the matching `.map` files in sync in the same commit.
+- `.vscode/tasks.json` defines a composite task `run all` that starts `start-php-server`, `compile typescripts`, and `watch-scss` in parallel.

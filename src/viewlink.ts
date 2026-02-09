@@ -21,4 +21,11 @@ export async function viewlink_invoke(path: string, json_obj: unknown): Promise<
     return data;
 }
 
+export function viewlink_onclick(event: Event): void {
+    console.log("viewlink_onclick", event.type, event.target);
+}
+
+document.addEventListener("click", viewlink_onclick);
+
 window.viewlink_invoke = viewlink_invoke;
+window.viewlink_onclick = viewlink_onclick;

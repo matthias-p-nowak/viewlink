@@ -10,8 +10,8 @@
 - Never revert files.
 - Use `touch` to create new files.
 - Use the 'apply_patch' feature to change files.
-- Do not run `sass` - it will be run by the user.
-- Do not run `esbuild` - it will be run by the user.
+- The Codex agent must never run `sass`; the user runs it.
+- The Codex agent must never run `esbuild`; the user runs it.
 
 ## Relevant files
 name | purpose
@@ -39,4 +39,3 @@ Inspect that the modification time of the files have changed and if not tell the
     - summarize the previous prompts and the prompt log and replace the section "Prompt log" in `docs/context.md`
     - git stage all modified files.
     - make a git commit with the summary of current status as the commit message
-

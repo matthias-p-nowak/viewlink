@@ -14,9 +14,12 @@
 - `src/viewlink.ts` attaches `viewlink_invoke` to `window` for direct browser-console and non-import usage.
 - `src/viewlink.ts` manages the private `viewlink_handlers` map and exposes `registerViewlinkHandler`.
 - `src/viewlink.ts` defines a shared `handle_viewlink(event)` dispatcher that resolves handlers by `event.type`, walks up ancestor elements, and dispatches by `data-viewlink` (`element.dataset.viewlink`) with first-match semantics.
-- `src/viewlink.ts` ensures each event type is attached to `document` once, then reuses `handle_viewlink` for subsequent registrations.
+- `src/viewlink.ts` ensures each event type is attached to `document` once by registering the listener only when the event type handler map is first created, then reuses `handle_viewlink` for subsequent registrations.
 - `src/demo.ts` defines `hello()` and calls `viewlink_invoke("index.php/hello", {})`, then assigns it to `window.hello`.
 - `src/window.d.ts` defines global `Window` typings for `window.viewlink_invoke` and `window.hello`.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.
 - `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and returns `{"invoke":"hello world"}` as JSON.
 - `.vscode/tasks.json` defines a composite task `run all` that starts `start-php-server`, `compile typescripts`, and `watch-scss` in parallel.
+- `.vscode/tasks.json` marks `run all` as the default build task, so invoking the editor's default build runs the full parallel stack.
+- `.vscode/tasks.json` configures `compile typescripts` with `problemMatcher: []`, so `esbuild --watch` output is shown in the terminal without VSCodium problem parsing.
+- Build/watch commands (`sass`, `esbuild`) are intentionally user-run workflows and are not executed by the Codex agent.

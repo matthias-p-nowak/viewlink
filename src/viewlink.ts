@@ -24,9 +24,9 @@ export async function viewlink_invoke(path: string, json_obj: unknown): Promise<
 export type ViewlinkEventHandler = (event: Event) => void;
 
 const viewlink_handlers = new Map<string, Map<string, ViewlinkEventHandler>>();
-const registeredListeners = new Set<string>();
 
-function handle_viewlink(event: Event): void {
+async function handle_viewlink(event: Event): Promise<void> {
+    console.log("handle_viewlink", event.type, event.target);
     const handlers = viewlink_handlers.get(event.type);
     if (!handlers) {
         return;
@@ -38,11 +38,12 @@ function handle_viewlink(event: Event): void {
         if (action) {
             const handler = handlers.get(action);
             if (handler) {
-                handler(event);
+                await handler(event);
                 break;
             }
         }
         current = current.parentElement;
+        console.log("gone to parent",current);
     }
 }
 
@@ -55,13 +56,9 @@ export function registerViewlinkHandler(
     if (!handlers) {
         handlers = new Map<string, ViewlinkEventHandler>();
         viewlink_handlers.set(eventType, handlers);
+        document.addEventListener(eventType, handle_viewlink);
     }
     handlers.set(action, handler);
-
-    if (!registeredListeners.has(eventType)) {
-        document.addEventListener(eventType, handle_viewlink);
-        registeredListeners.add(eventType);
-    }
 }
 
 export function viewlink_onclick(event: Event): void {

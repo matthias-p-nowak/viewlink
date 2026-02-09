@@ -50,15 +50,12 @@
       "command": "esbuild",
       "args": [
         "--bundle",
-        "src/viewlink.ts",
         "src/demo.ts",
         "--outdir=${workspaceFolder}",
         "--sourcemap",
         "--watch"
       ],
-      "problemMatcher": [
-        "$tsc-watch"
-      ],
+      "problemMatcher": [],
       "isBackground": true
     },
     {
@@ -81,11 +78,17 @@
     },
     {
       "label": "run all",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
       "dependsOn": [
         "start-php-server",
         "compile typescripts",
         "watch-scss"
       ],
+      "problemMatcher": [],
+      "isBackground": true,
       "dependsOrder": "parallel"
     }
   ]

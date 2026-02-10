@@ -18,7 +18,7 @@
 - `src/demo.ts` imports `src/viewlink.ts` as a namespace (`import * as viewlink`) and defines `hello(event)` calling `viewlink.viewlink_fetch("index.php/hello", event, {})`.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.
 - `src/tsconfig.json` uses `lib: ["dom", "es2021"]` to avoid duplicate global type collisions between DOM and Web Worker libs.
-- `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and currently returns `{"invoke":"hello world"}` as JSON; this is a contract mismatch with frontend return-handler dispatch expecting `type`.
+- `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and returns JSON as an array containing `{ "type": "world", "yellow": "submarine" }`, which matches frontend return-handler dispatch by `type`.
 - `.vscode/tasks.json` defines a composite task `run all` that starts `start-php-server`, `compile typescripts`, and `watch-scss` in parallel.
 - `.vscode/tasks.json` marks `run all` as the default build task, so invoking the editor's default build runs the full parallel stack.
 - `.vscode/tasks.json` configures `compile typescripts` with `problemMatcher: []`, so `esbuild --watch` output is shown in the terminal without VSCodium problem parsing.

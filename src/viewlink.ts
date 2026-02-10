@@ -1,5 +1,5 @@
 export type ViewlinkEventHandler = (event: Event) => void;
-export type ReturnDataHandler = (target: Event, data: unknown) => void;
+export type ReturnDataHandler = (event: Event, data: unknown) => void;
 
 const viewlink_handlers = new Map<string, Map<string, ViewlinkEventHandler>>();
 const return_handlers = new Map<string, ReturnDataHandler>();
@@ -9,7 +9,7 @@ const return_handlers = new Map<string, ReturnDataHandler>();
  * The base URL is taken from the <meta name="baseURL"> tag in the HTML document.
  * The request is sent with the Content-Type header set to "application/json".
  * If the response is not OK, an Error is thrown with the response status and status text.
- * If the response is OK, the JSON response is parsed and passed to the registered ReturnDataHandler.
+ * If the response is OK, the JSON response is parsed and dispatched to a registered ReturnDataHandler.
  * @param {string} path - The path to send the request to, relative to the base URL.
  * @param {Event} event - The event that triggered the request.
  * @param {unknown} json_obj - The JSON object to send as the request body.
@@ -32,12 +32,11 @@ export async function viewlink_fetch(path: string, event: Event, json_obj: unkno
 }
 
 /**
- * Handles the returned data from the server.
- * If the data is not an object, or if it is an array, it is recursively processed.
- * If the data is an object, it is expected to have a "type" property which is used to determine the handler to call.
- * If the data does not have a "type" property, or if it is not a string, the function returns without doing anything.
- * If the handler is not registered, the function returns without doing anything.
- * The handler is called with the original event and the processed data.
+ * Handles returned data from the server.
+ * Arrays are recursively processed item-by-item.
+ * Objects with a string `type` are matched to a registered return handler.
+ * If no matching handler exists, the data is ignored.
+ * Matching handlers receive the original event and the response object.
  * @param {Event} event - The original event that triggered the request.
  * @param {unknown} data - The returned data from the server.
  */
@@ -113,9 +112,9 @@ export function registerViewlinkHandler(
 }
 
 /**
- * Registers a return data handler for a specific type of data.
- * When the data is received, the handler is called with the event object and the data as arguments.
- * The handler is stored in a map with the handler name as the key.
+ * Registers a return data handler.
+ * Handler names are used as the dispatch key (matching response `type`).
+ * When matched, the handler is called with the original event and response data.
  * @param {ReturnDataHandler} handler - The return data handler to call when the data is received.
  */
 export function registerReturnHandler(

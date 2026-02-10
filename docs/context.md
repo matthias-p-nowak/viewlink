@@ -3,8 +3,7 @@
 ## Prompt log
 
 - 2026-02-09 to 2026-02-10 consolidated summary:
-  - Refactored event listener registration in `src/viewlink.ts` to deduplicate `document` listeners per event type and kept shared `handle_viewlink` dispatch behavior.
-  - Added listener-registration logging in `registerViewlinkHandler` and removed stale `viewlink.js` documentation references after confirming `demo.js`-only script loading.
-  - Aligned docs with runtime/API behavior (`viewlink_fetch`, `data-action`, handler registration signatures) and documented the `tsconfig` lib choice `["dom", "es2021"]` after resolving type conflicts.
-  - Implemented and then refactored return-handler response dispatch in `src/viewlink.ts` to use payload `type` for `return_handlers` resolution via `handleReturnData(event, data)`; noted backend/frontend contract mismatch where `index.php` still returns `invoke`.
-  - Updated `src/demo.ts` by replacing the TODO with namespace import style (`import * as viewlink from "./viewlink"`) and switched call sites to `viewlink.viewlink_fetch`, `viewlink.registerViewlinkHandler`, and `viewlink.registerReturnHandler`.
+  - Refactored `src/viewlink.ts` listener registration to attach one `document` listener per event type, kept shared `handle_viewlink` dispatch, and added registration logging.
+  - Implemented return-data dispatch through `handleReturnData(event, data)` with `type`-based handler lookup and recursive array handling; aligned handler registration with `registerReturnHandler(handler)`.
+  - Updated `src/demo.ts` to use namespace imports (`import * as viewlink`) and call `viewlink.viewlink_fetch`, `viewlink.registerViewlinkHandler`, and `viewlink.registerReturnHandler`.
+  - Synced docs (`docs/design.md`, `docs/architecture.md`) to current runtime/API behavior, including backend response shape compatibility and TypeScript lib configuration context.

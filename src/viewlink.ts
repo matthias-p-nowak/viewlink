@@ -1,9 +1,19 @@
 export type ViewlinkEventHandler = (event: Event) => void;
-export type ReturnDataHandler = (target: EventTarget, data: unknown) => void;
+export type ReturnDataHandler = (target: Event, data: unknown) => void;
 
 const viewlink_handlers = new Map<string, Map<string, ViewlinkEventHandler>>();
 const return_handlers = new Map<string, ReturnDataHandler>();
 
+/**
+ * Send a POST request to the specified URL with the given JSON object as the body.
+ * The base URL is taken from the <meta name="baseURL"> tag in the HTML document.
+ * The request is sent with the Content-Type header set to "application/json".
+ * If the response is not OK, an Error is thrown with the response status and status text.
+ * If the response is OK, the JSON response is parsed and passed to the registered ReturnDataHandler.
+ * @param {string} path - The path to send the request to, relative to the base URL.
+ * @param {Event} event - The event that triggered the request.
+ * @param {unknown} json_obj - The JSON object to send as the request body.
+ */
 export async function viewlink_fetch(path: string, event: Event, json_obj: unknown) {
     const url = new URL(path, document.baseURI).toString();
     const response = await fetch(url, {
@@ -18,10 +28,47 @@ export async function viewlink_fetch(path: string, event: Event, json_obj: unkno
     }
     const data: unknown = await response.json();
     console.log("returned", data);
-    // todo act on the data using the return_handlers 
+    handleReturnData(event, data);
+}
+
+/**
+ * Handles the returned data from the server.
+ * If the data is not an object, or if it is an array, it is recursively processed.
+ * If the data is an object, it is expected to have a "type" property which is used to determine the handler to call.
+ * If the data does not have a "type" property, or if it is not a string, the function returns without doing anything.
+ * If the handler is not registered, the function returns without doing anything.
+ * The handler is called with the original event and the processed data.
+ * @param {Event} event - The original event that triggered the request.
+ * @param {unknown} data - The returned data from the server.
+ */
+function handleReturnData(event: Event, data: unknown): void {
+    if (!data || typeof data !== "object") {
+        return;
+    }
+    if (Array.isArray(data)) {
+        data.forEach(element => {
+            handleReturnData(event, element);
+        });
+        return;
+    }
+    const action = (data as { type?: unknown }).type;
+    if (typeof action !== "string") {
+        return;
+    }
+    const handler = return_handlers.get(action);
+    if (!handler) {
+        return;
+    }
+    handler(event, data);
 }
 
 
+/**
+ * Handles an event by finding the first ancestor element with a dataset property of "action".
+ * If the element is found, it calls the handler registered for the event type and the action name.
+ * If the handler is not registered, it continues to the parent element until it finds a matching handler or reaches the root element.
+ * @param {Event} event - The event to handle.
+ */
 async function handle_viewlink(event: Event): Promise<void> {
     console.log("handle_viewlink", event.type, event.target);
     const handlers = viewlink_handlers.get(event.type);
@@ -34,7 +81,7 @@ async function handle_viewlink(event: Event): Promise<void> {
         if (action) {
             const handler = handlers.get(action);
             if (handler) {
-                await handler(event);
+                handler(event);
                 break;
             }
         }
@@ -43,6 +90,14 @@ async function handle_viewlink(event: Event): Promise<void> {
     }
 }
 
+/**
+ * Registers an event handler for a specific event type.
+ * If the event type is not already registered, it will attach a document listener for the event type.
+ * The handler is stored in a map with the event type as the key and the handler name as the value.
+ * When the event is triggered, the handler is called with the event object as the argument.
+ * @param {string} eventType - The type of event to listen for.
+ * @param {ViewlinkEventHandler} handler - The event handler to call when the event is triggered.
+ */
 export function registerViewlinkHandler(
     eventType: string,
     handler: ViewlinkEventHandler
@@ -57,15 +112,17 @@ export function registerViewlinkHandler(
     handlers.set(handler.name, handler);
 }
 
+/**
+ * Registers a return data handler for a specific type of data.
+ * When the data is received, the handler is called with the event object and the data as arguments.
+ * The handler is stored in a map with the handler name as the key.
+ * @param {ReturnDataHandler} handler - The return data handler to call when the data is received.
+ */
 export function registerReturnHandler(
-    eventType: string,
     handler: ReturnDataHandler
 ): void {
-    return_handlers.set(eventType, handler);
+    console.log("registerReturnHandler", handler.name);
+    return_handlers.set(handler.name, handler);
 }   
-
-
-window.viewlink_fetch = viewlink_fetch;
-window.registerViewlinkHandler = registerViewlinkHandler;
 
 console.log("viewlink loaded");

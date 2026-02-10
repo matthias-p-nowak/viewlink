@@ -9,16 +9,16 @@
 - The page loads `demo.js` as an ES module via a script tag.
 - `src/viewlink.ts` defines and exports `viewlink_fetch(path, event, json_obj)` for POSTing JSON requests.
 - `src/viewlink.ts` resolves request URLs with `new URL(path, document.baseURI)`.
-- `src/viewlink.ts` attaches `viewlink_fetch` to `window` for direct browser-console and non-import usage.
+- `src/viewlink.ts` uses an internal `handleReturnData(event, data)` helper to process response payload dispatch.
+- `src/viewlink.ts` dispatches JSON responses through `return_handlers` when payloads include a `type` string, calling the registered handler with `event.target ?? document` and the full response payload.
 - `src/viewlink.ts` manages the private `viewlink_handlers` and `return_handlers` maps and exposes `registerViewlinkHandler` and `registerReturnHandler`.
 - `src/viewlink.ts` logs when `registerViewlinkHandler` registers a new `document` listener for an event type.
 - `src/viewlink.ts` defines a shared `handle_viewlink(event)` dispatcher that resolves handlers by `event.type`, walks up ancestor elements, and dispatches by `data-action` (`element.dataset.action`) with first-match semantics.
 - `src/viewlink.ts` ensures each event type is attached to `document` once by registering the listener only when the event type handler map is first created, then reuses `handle_viewlink` for subsequent registrations.
-- `src/demo.ts` defines `hello(event)` and calls `viewlink_fetch("index.php/hello", event, {})`.
-- `src/window.d.ts` defines global `Window` typings for `window.viewlink_fetch` and `window.registerViewlinkHandler`.
+- `src/demo.ts` imports `src/viewlink.ts` as a namespace (`import * as viewlink`) and defines `hello(event)` calling `viewlink.viewlink_fetch("index.php/hello", event, {})`.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.
 - `src/tsconfig.json` uses `lib: ["dom", "es2021"]` to avoid duplicate global type collisions between DOM and Web Worker libs.
-- `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and returns `{"invoke":"hello world"}` as JSON.
+- `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and currently returns `{"invoke":"hello world"}` as JSON; this is a contract mismatch with frontend return-handler dispatch expecting `type`.
 - `.vscode/tasks.json` defines a composite task `run all` that starts `start-php-server`, `compile typescripts`, and `watch-scss` in parallel.
 - `.vscode/tasks.json` marks `run all` as the default build task, so invoking the editor's default build runs the full parallel stack.
 - `.vscode/tasks.json` configures `compile typescripts` with `problemMatcher: []`, so `esbuild --watch` output is shown in the terminal without VSCodium problem parsing.

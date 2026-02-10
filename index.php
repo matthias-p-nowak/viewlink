@@ -19,7 +19,10 @@ match ($pathInfo){
 
 function show_hello(){
     http_response_code(200);
-    echo json_encode(['invoke' => 'hello world']);
+    echo json_encode([[
+        'type' => 'world',
+        'yellow' => 'submarine',
+    ]]);
     exit;
 }
 

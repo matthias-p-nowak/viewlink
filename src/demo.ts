@@ -1,9 +1,16 @@
-import { registerViewlinkHandler, registerReturnHandler, viewlink_fetch } from "./viewlink";
+import * as viewlink from "./viewlink";
 
 export function hello(event: Event) {
     console.log("hello called");
-    viewlink_fetch("index.php/hello", event, {});
+    viewlink.viewlink_fetch("index.php/hello", event, {});
 }
 
-registerViewlinkHandler("click", hello);
+viewlink.registerViewlinkHandler("click", hello);
+
+export function world(event: Event, data: unknown) {
+    console.log("world called", data);
+}
+
+viewlink.registerReturnHandler(world);
+
 console.log("demo loaded");

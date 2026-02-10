@@ -3,21 +3,21 @@
 - `index.html` is the entry document and provides basic page content.
 - `index.html` defines a `<meta name="baseURL" content="index.php">` tag for base URL configuration.
 - `index.html` defines `<link rel="icon" href="favicon.ico" sizes="any">` for favicon loading.
-- `index.html` includes a `<button class="hello" onclick="hello()">Hello</button>` demo trigger.
+- `index.html` includes a `<button class="hello" data-action="hello">Hello</button>` demo trigger.
 - `favicon.ico` is a 16x16 icon with a dark blue dot on a transparent background.
-- `viewlink.js` is the browser bundle generated from `src/viewlink.ts`.
 - `demo.js` is the browser bundle generated from `src/demo.ts`.
-- The page loads `viewlink.js` as an ES module via a script tag.
 - The page loads `demo.js` as an ES module via a script tag.
-- `src/viewlink.ts` defines and exports `viewlink_invoke(path, json_obj)` for POSTing JSON requests.
+- `src/viewlink.ts` defines and exports `viewlink_fetch(path, event, json_obj)` for POSTing JSON requests.
 - `src/viewlink.ts` resolves request URLs with `new URL(path, document.baseURI)`.
-- `src/viewlink.ts` attaches `viewlink_invoke` to `window` for direct browser-console and non-import usage.
-- `src/viewlink.ts` manages the private `viewlink_handlers` map and exposes `registerViewlinkHandler`.
-- `src/viewlink.ts` defines a shared `handle_viewlink(event)` dispatcher that resolves handlers by `event.type`, walks up ancestor elements, and dispatches by `data-viewlink` (`element.dataset.viewlink`) with first-match semantics.
+- `src/viewlink.ts` attaches `viewlink_fetch` to `window` for direct browser-console and non-import usage.
+- `src/viewlink.ts` manages the private `viewlink_handlers` and `return_handlers` maps and exposes `registerViewlinkHandler` and `registerReturnHandler`.
+- `src/viewlink.ts` logs when `registerViewlinkHandler` registers a new `document` listener for an event type.
+- `src/viewlink.ts` defines a shared `handle_viewlink(event)` dispatcher that resolves handlers by `event.type`, walks up ancestor elements, and dispatches by `data-action` (`element.dataset.action`) with first-match semantics.
 - `src/viewlink.ts` ensures each event type is attached to `document` once by registering the listener only when the event type handler map is first created, then reuses `handle_viewlink` for subsequent registrations.
-- `src/demo.ts` defines `hello()` and calls `viewlink_invoke("index.php/hello", {})`, then assigns it to `window.hello`.
-- `src/window.d.ts` defines global `Window` typings for `window.viewlink_invoke` and `window.hello`.
+- `src/demo.ts` defines `hello(event)` and calls `viewlink_fetch("index.php/hello", event, {})`.
+- `src/window.d.ts` defines global `Window` typings for `window.viewlink_fetch` and `window.registerViewlinkHandler`.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.
+- `src/tsconfig.json` uses `lib: ["dom", "es2021"]` to avoid duplicate global type collisions between DOM and Web Worker libs.
 - `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and returns `{"invoke":"hello world"}` as JSON.
 - `.vscode/tasks.json` defines a composite task `run all` that starts `start-php-server`, `compile typescripts`, and `watch-scss` in parallel.
 - `.vscode/tasks.json` marks `run all` as the default build task, so invoking the editor's default build runs the full parallel stack.

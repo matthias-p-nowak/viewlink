@@ -24,7 +24,6 @@ name | purpose
 The user will start the required programs that will build:
 - `main.css` from `src/main.scss`
 - `demo.js` from `src/demo.ts`
-- `viewlink.js` from `src/viewlink.ts`
 Inspect that the modification time of the files have changed and if not tell the user to run the Visual Studio code tasks defined under `.vscode/tasks.json`
 
 # Preferences

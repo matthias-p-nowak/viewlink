@@ -1,31 +1,42 @@
 # Overview
 
-This project aims at generating a javascript library hat simplifies the development of web based remote control.
+This project aims at generating a javascript library that simplifies the development of web based remote control.
 
-User interactions are catched by eventlisteners attached to the document.
-Based on the event type and classes on the event.target element, certain functions are executed.
-When the server needs to be invoked, the invoke function is called with a path and a json object as arguments.
-The return from the server is handled by the invoke function.
+- the user registers with the library:
+    - EventHandlers that take the event as an argument
+    - ReturnHandlers that take the original event and a json as argument
+
+- EventHandlers can use `viewlink_fetch` to communicate with the server
+    - it sends a json structure as the body in a Post method
+    - the server can respond with JSON
+    - return-handler dispatch by response `type` is planned but not implemented yet
+- The library listens on the document for certain events see `handle_viewlink`
+    - the `data-action` is the name of the EventHandler to use
+
 
 # Files
 - `index.html` is the original landing page
 - `index.php` is an example for a backend that gets Rest-API requests with json as the Post payload and returns a json structure.
-- `src/viewlinks.ts` contains the library functionality
+- `src/viewlink.ts` contains the library functionality
 - `src/demo.ts` contains the example usage
 
 # Datastructures
 - `viewlink_handlers`
-    - private `Map<string, Map<string, event_handler>>` keyed first by event type and then by action name.
-    - the dispatcher registered per event type walks up from `event.target` looking for a `data-viewlink` attribute and runs the mapped handler for the first match.
-    - handlers are registered via `registerViewlinkHandler(eventType, action, handler)` which also ensures the document listener is attached.
+    - private `Map<string, Map<string, ViewlinkEventHandler>>` keyed first by event type and then by handler name (`handler.name`).
+    - the dispatcher registered per event type walks up from `event.target` looking for a `data-action` attribute and runs the mapped handler for the first match.
+    - handlers are registered via `registerViewlinkHandler(eventType, handler)` which also ensures the document listener is attached.
+- `return_handlers`
+    - private `Map<string, ReturnDataHandler>` keyed by a return-event type string.
+    - handlers are registered via `registerReturnHandler(eventType, handler)`.
+    - currently stored for future use; `viewlink_fetch` does not yet dispatch response data through this map.
 
 # Functions
- - `registerViewlinkHandler(eventType, action, handler)`
-     - stores `handler` inside `viewlink_handlers[eventType][action]` and attaches a single document listener that delegates events with the matching `data-viewlink`.
-- `viewlink_invoke(path, json_obj)` 
+ - `registerViewlinkHandler(eventType, handler)`
+     - stores `handler` inside `viewlink_handlers[eventType][handler.name]` and attaches a single document listener that delegates events with the matching `data-action`.
+- `registerReturnHandler(eventType, handler)`
+    - stores a return data handler in `return_handlers` for a future response-dispatch step.
+- `viewlink_fetch(path, event, json_obj)` 
     - uses POST to fetch a json object from `document.baseURI+path` with json_obj as the body and content-type application/json. 
     - it retrieves the response and parse it into a json object
-    - it console.log the field `invoke`.
-- `viewlink_onclick(event)`
-    - it is an eventlistener that currently console.logs.
-    - it is registered via `registerViewlinkHandler("click", "viewlink_onclick", viewlink_onclick)` so the dispatcher attaches it when the module loads.
+    - it currently logs the full returned object.
+    - TODO: dispatch the response object(s) via `return_handlers`.

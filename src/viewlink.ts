@@ -1,4 +1,10 @@
-export async function viewlink_invoke(path: string, json_obj: unknown): Promise<unknown> {
+export type ViewlinkEventHandler = (event: Event) => void;
+export type ReturnDataHandler = (target: EventTarget, data: unknown) => void;
+
+const viewlink_handlers = new Map<string, Map<string, ViewlinkEventHandler>>();
+const return_handlers = new Map<string, ReturnDataHandler>();
+
+export async function viewlink_fetch(path: string, event: Event, json_obj: unknown) {
     const url = new URL(path, document.baseURI).toString();
     const response = await fetch(url, {
         method: "POST",
@@ -7,23 +13,14 @@ export async function viewlink_invoke(path: string, json_obj: unknown): Promise<
         },
         body: JSON.stringify(json_obj),
     });
-
     if (!response.ok) {
-        throw new Error(`viewlink_invoke failed: ${response.status} ${response.statusText}`);
+        throw new Error(`viewlink_fetch failed: ${response.status} ${response.statusText}`);
     }
-
     const data: unknown = await response.json();
-    const invokeValue =
-        typeof data === "object" && data !== null && "invoke" in data
-            ? (data as Record<string, unknown>).invoke
-            : undefined;
-    console.log(invokeValue);
-    return data;
+    console.log("returned", data);
+    // todo act on the data using the return_handlers 
 }
 
-export type ViewlinkEventHandler = (event: Event) => void;
-
-const viewlink_handlers = new Map<string, Map<string, ViewlinkEventHandler>>();
 
 async function handle_viewlink(event: Event): Promise<void> {
     console.log("handle_viewlink", event.type, event.target);
@@ -31,10 +28,9 @@ async function handle_viewlink(event: Event): Promise<void> {
     if (!handlers) {
         return;
     }
-
     let current: EventTarget | null = event.target;
     while (current && current instanceof HTMLElement) {
-        const action = current.dataset.viewlink;
+        const action = current.dataset.action;
         if (action) {
             const handler = handlers.get(action);
             if (handler) {
@@ -43,30 +39,33 @@ async function handle_viewlink(event: Event): Promise<void> {
             }
         }
         current = current.parentElement;
-        console.log("gone to parent",current);
+        console.log("gone to parent", current);
     }
 }
 
 export function registerViewlinkHandler(
     eventType: string,
-    action: string,
     handler: ViewlinkEventHandler
 ): void {
     let handlers = viewlink_handlers.get(eventType);
     if (!handlers) {
+        console.log("registerViewlinkHandler: registering document listener", eventType);
         handlers = new Map<string, ViewlinkEventHandler>();
         viewlink_handlers.set(eventType, handlers);
         document.addEventListener(eventType, handle_viewlink);
     }
-    handlers.set(action, handler);
+    handlers.set(handler.name, handler);
 }
 
-export function viewlink_onclick(event: Event): void {
-    console.log("viewlink_onclick", event.type, event.target);
-}
+export function registerReturnHandler(
+    eventType: string,
+    handler: ReturnDataHandler
+): void {
+    return_handlers.set(eventType, handler);
+}   
 
-registerViewlinkHandler("click", "viewlink_onclick", viewlink_onclick);
 
-window.viewlink_invoke = viewlink_invoke;
-window.viewlink_onclick = viewlink_onclick;
+window.viewlink_fetch = viewlink_fetch;
 window.registerViewlinkHandler = registerViewlinkHandler;
+
+console.log("viewlink loaded");

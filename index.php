@@ -1,16 +1,19 @@
 <?php
 declare(strict_types=1);
-header('Content-Type: application/json');
-
-
-$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-if( $method !== 'POST'){
-    http_response_code(405);
-    echo json_encode(['error' => 'method not allowed']);
-    exit;
-}
 
 $pathInfo = $_SERVER['PATH_INFO'] ?? '';
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
+if ($pathInfo === '/listen') {
+    if ($method !== 'GET') {
+        method_not_allowed('GET');
+    }
+    stream_listen();
+}
+
+if ($method !== 'POST') {
+    method_not_allowed('POST');
+}
 
 match ($pathInfo){
     '/hello' => show_hello(),
@@ -18,6 +21,7 @@ match ($pathInfo){
 };
 
 function show_hello(){
+    header('Content-Type: application/json');
     http_response_code(200);
     echo json_encode([[
         'type' => 'world',
@@ -27,6 +31,40 @@ function show_hello(){
 }
 
 function show_error(){
+    header('Content-Type: application/json');
     http_response_code(404);
     echo json_encode(['error' => 'not found']);
+}
+
+function method_not_allowed(string $allowedMethod): void {
+    header('Content-Type: application/json');
+    header("Allow: {$allowedMethod}");
+    http_response_code(405);
+    echo json_encode(['error' => 'method not allowed']);
+    exit;
+}
+
+function stream_listen(): void {
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache');
+    header('Connection: keep-alive');
+    header('X-Accel-Buffering: no');
+
+    ignore_user_abort(true);
+    set_time_limit(0);
+
+    echo "retry: 3000\n\n";
+    while (!connection_aborted()) {
+        $payload = json_encode([
+            'type' => 'world',
+            'yellow' => 'submarine',
+            'source' => 'listen',
+            'time' => gmdate(DATE_ATOM),
+        ]);
+        echo "data: {$payload}\n\n";
+        @ob_flush();
+        flush();
+        sleep(5);
+    }
+    exit;
 }

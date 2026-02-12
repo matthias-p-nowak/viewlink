@@ -3,10 +3,12 @@ export type ReturnDataHandler = (event: Event, data: unknown) => void;
 
 const viewlink_handlers = new Map<string, Map<string, ViewlinkEventHandler>>();
 const return_handlers = new Map<string, ReturnDataHandler>();
+let listenSource: EventSource | null = null;
+let listenUrl: string | null = null;
 
 /**
  * Send a POST request to the specified URL with the given JSON object as the body.
- * The base URL is taken from the <meta name="baseURL"> tag in the HTML document.
+ * The base URL comes from document.baseURI (typically influenced by <base href="...">).
  * The request is sent with the Content-Type header set to "application/json".
  * If the response is not OK, an Error is thrown with the response status and status text.
  * If the response is OK, the JSON response is parsed and dispatched to a registered ReturnDataHandler.
@@ -29,6 +31,48 @@ export async function viewlink_fetch(path: string, event: Event, json_obj: unkno
     const data: unknown = await response.json();
     console.log("returned", data);
     handleReturnData(event, data);
+}
+
+/**
+ * Opens an SSE connection to receive server events and dispatches payloads
+ * through the same return-data handlers used by viewlink_fetch.
+ * Repeated calls with the same URL are ignored.
+ * Repeated calls with a different URL replace the active connection.
+ * @param {string} path - The SSE endpoint path, resolved against document.baseURI.
+ */
+export function viewlink_listen(path: string): void {
+    const resolvedUrl = new URL(path, document.baseURI).toString();
+    if (listenSource && listenUrl === resolvedUrl) {
+        return;
+    }
+
+    if (listenSource) {
+        listenSource.close();
+        listenSource = null;
+        listenUrl = null;
+    }
+
+    console.log("viewlink_listen: connecting", resolvedUrl);
+    const source = new EventSource(resolvedUrl);
+    listenSource = source;
+    listenUrl = resolvedUrl;
+
+    source.onopen = () => {
+        console.log("viewlink_listen: connected", resolvedUrl);
+    };
+
+    source.onmessage = (message: MessageEvent<string>) => {
+        try {
+            const parsedData: unknown = JSON.parse(message.data);
+            handleReturnData(new Event("viewlink_listen"), parsedData);
+        } catch (error) {
+            console.error("viewlink_listen: invalid JSON payload", error, message.data);
+        }
+    };
+
+    source.onerror = (error: Event) => {
+        console.warn("viewlink_listen: connection error, browser will retry", error);
+    };
 }
 
 /**

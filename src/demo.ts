@@ -2,7 +2,7 @@ import * as viewlink from "./viewlink";
 
 export function hello(event: Event) {
     console.log("hello called");
-    viewlink.viewlink_fetch("index.php/hello", event, {});
+    viewlink.viewlink_fetch("hello", event, {});
 }
 
 viewlink.registerViewlinkHandler("click", hello);
@@ -12,5 +12,6 @@ export function world(event: Event, data: unknown) {
 }
 
 viewlink.registerReturnHandler(world);
+viewlink.viewlink_listen("listen");
 
 console.log("demo loaded");

@@ -14,6 +14,12 @@ This project aims at generating a javascript library that simplifies the develop
     - a matching registered return handler is called when found
 - The library listens on the document for certain events see `handle_viewlink`
     - the `data-action` is the name of the EventHandler to use
+- The function `viewlink_listen` 
+    - opens a single SSE (`EventSource`) connection to a supplied endpoint for server side events
+    - auto-reconnect is delegated to the browser-native `EventSource` behavior
+    - each incoming `message.data` is parsed as JSON and passed to `handleReturnData`
+    - dispatch uses existing `return_handlers` by matching response `type` values
+    - repeated calls with the same endpoint are ignored; a different endpoint replaces the active connection
 
 
 # Files
@@ -42,3 +48,8 @@ This project aims at generating a javascript library that simplifies the develop
     - it retrieves the response and parse it into a json object
     - it logs the full returned object.
     - it dispatches the response object(s) via `return_handlers` using the `type` field.
+- `viewlink_listen(path)`
+    - resolves `path` against `document.baseURI` and creates a long-lived `EventSource`
+    - parses SSE `message.data` as JSON object or array
+    - dispatches parsed payload with `handleReturnData(new Event("viewlink_listen"), payload)`
+    - logs parse failures and connection errors without closing the source manually

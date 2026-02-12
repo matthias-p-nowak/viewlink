@@ -1,24 +1,28 @@
 # Architecture
 
 - `index.html` is the entry document and provides basic page content.
-- `index.html` defines a `<meta name="baseURL" content="index.php">` tag for base URL configuration.
-- `index.html` defines `<link rel="icon" href="favicon.ico" sizes="any">` for favicon loading.
+- `index.html` defines `<base href="index.php/">` so relative request paths like `hello` resolve to `/index.php/hello`.
+- `index.html` uses absolute asset URLs (`/favicon.ico`, `/demo.js`) so frontend assets keep loading from web root while API calls follow the base URL.
 - `index.html` includes a `<button class="hello" data-action="hello">Hello</button>` demo trigger.
 - `favicon.ico` is a 16x16 icon with a dark blue dot on a transparent background.
 - `demo.js` is the browser bundle generated from `src/demo.ts`.
 - The page loads `demo.js` as an ES module via a script tag.
 - `src/viewlink.ts` defines and exports `viewlink_fetch(path, event, json_obj)` for POSTing JSON requests.
+- `src/viewlink.ts` defines and exports `viewlink_listen(path)` for opening a browser-managed SSE stream (`EventSource`) to server push endpoints.
 - `src/viewlink.ts` resolves request URLs with `new URL(path, document.baseURI)`.
 - `src/viewlink.ts` uses an internal `handleReturnData(event, data)` helper to process response payload dispatch.
-- `src/viewlink.ts` dispatches JSON responses through `return_handlers` when payloads include a `type` string, calling the registered handler with `event.target ?? document` and the full response payload.
+- `src/viewlink.ts` dispatches JSON responses through `return_handlers` when payloads include a `type` string, calling the registered handler with the source event and the full response payload.
 - `src/viewlink.ts` manages the private `viewlink_handlers` and `return_handlers` maps and exposes `registerViewlinkHandler` and `registerReturnHandler`.
+- `src/viewlink.ts` keeps listener state in private `listenSource` and `listenUrl` module variables to enforce one active SSE stream; same-URL calls are idempotent and different-URL calls replace the stream.
+- `src/viewlink.ts` parses incoming SSE `message.data` JSON and reuses `handleReturnData(new Event("viewlink_listen"), data)` to share return-handler dispatch behavior with `viewlink_fetch`.
 - `src/viewlink.ts` logs when `registerViewlinkHandler` registers a new `document` listener for an event type.
 - `src/viewlink.ts` defines a shared `handle_viewlink(event)` dispatcher that resolves handlers by `event.type`, walks up ancestor elements, and dispatches by `data-action` (`element.dataset.action`) with first-match semantics.
 - `src/viewlink.ts` ensures each event type is attached to `document` once by registering the listener only when the event type handler map is first created, then reuses `handle_viewlink` for subsequent registrations.
-- `src/demo.ts` imports `src/viewlink.ts` as a namespace (`import * as viewlink`) and defines `hello(event)` calling `viewlink.viewlink_fetch("index.php/hello", event, {})`.
+- `src/demo.ts` imports `src/viewlink.ts` as a namespace (`import * as viewlink`) and defines `hello(event)` calling `viewlink.viewlink_fetch("hello", event, {})`.
+- `src/demo.ts` starts SSE listening with `viewlink.viewlink_listen("listen")` after return-handler registration.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.
 - `src/tsconfig.json` uses `lib: ["dom", "es2021"]` to avoid duplicate global type collisions between DOM and Web Worker libs.
-- `index.php` routes using `$_SERVER['PATH_INFO']`, handles `POST` requests to `/hello`, and returns JSON as an array containing `{ "type": "world", "yellow": "submarine" }`, which matches frontend return-handler dispatch by `type`.
+- `index.php` routes using `$_SERVER['PATH_INFO']`: `POST /hello` returns JSON as an array containing `{ "type": "world", "yellow": "submarine" }` and `GET /listen` returns `text/event-stream` frames with JSON in `data:` lines for the same `type`-based frontend dispatch.
 - `.vscode/tasks.json` defines a composite task `run all` that starts `start-php-server`, `compile typescripts`, and `watch-scss` in parallel.
 - `.vscode/tasks.json` marks `run all` as the default build task, so invoking the editor's default build runs the full parallel stack.
 - `.vscode/tasks.json` configures `compile typescripts` with `problemMatcher: []`, so `esbuild --watch` output is shown in the terminal without VSCodium problem parsing.

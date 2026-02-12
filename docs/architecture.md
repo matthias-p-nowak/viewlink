@@ -22,7 +22,7 @@
 - `src/demo.ts` starts SSE listening with `viewlink.viewlink_listen("listen")` after return-handler registration.
 - `src/tsconfig.json` is scoped to include TypeScript sources under `src/` via relative include globs.
 - `src/tsconfig.json` uses `lib: ["dom", "es2021"]` to avoid duplicate global type collisions between DOM and Web Worker libs.
-- `index.php` routes using `$_SERVER['PATH_INFO']`: `POST /hello` returns JSON as an array containing `{ "type": "world", "yellow": "submarine" }` and `GET /listen` returns `text/event-stream` frames with JSON in `data:` lines for the same `type`-based frontend dispatch.
+- `index.php` routes using `$_SERVER['PATH_INFO']`: `POST /hello` returns JSON as an array containing `{ "type": "world", "yellow": "submarine" }` and `GET /listen` returns `text/event-stream` frames where each push includes an incrementing `id`, an explicit `event: <type>` line, and the JSON `data:` payload so `viewlink_listen` can continue dispatching via the payload `type`.
 - `.vscode/tasks.json` defines a composite task `run all` that starts `start-php-server`, `compile typescripts`, and `watch-scss` in parallel.
 - `.vscode/tasks.json` marks `run all` as the default build task, so invoking the editor's default build runs the full parallel stack.
 - `.vscode/tasks.json` configures `compile typescripts` with `problemMatcher: []`, so `esbuild --watch` output is shown in the terminal without VSCodium problem parsing.

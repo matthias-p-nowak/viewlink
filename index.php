@@ -54,13 +54,22 @@ function stream_listen(): void {
     set_time_limit(0);
 
     echo "retry: 3000\n\n";
+    $eventId = 0;
     while (!connection_aborted()) {
-        $payload = json_encode([
+        $eventId++;
+        $payloadData = [
             'type' => 'world',
             'yellow' => 'submarine',
             'source' => 'listen',
             'time' => gmdate(DATE_ATOM),
-        ]);
+        ];
+        $payload = json_encode($payloadData);
+        if ($payload === false) {
+            continue;
+        }
+        $eventType = (string) ($payloadData['type'] ?? 'message');
+        echo "id: {$eventId}\n";
+        echo "event: {$eventType}\n";
         echo "data: {$payload}\n\n";
         @ob_flush();
         flush();

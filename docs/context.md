@@ -3,9 +3,9 @@
 ## Prompt log
 
 - 2026-02-09 to 2026-02-12 consolidated summary:
-  - Kept event delegation architecture in `src/viewlink.ts` with one document listener per event type and `data-action`-based handler resolution, plus return payload dispatch through `handleReturnData(event, data)` and `type`-matched `return_handlers`.
-  - Implemented SSE support via `viewlink_listen(path)` using a singleton `EventSource` connection (`listenSource`, `listenUrl`), same-URL idempotency, replacement on URL change, JSON parsing of `message.data`, and reuse of existing `type` dispatch by calling `handleReturnData(new Event("viewlink_listen"), payload)`.
-  - Extended backend routing in `index.php` with `GET /listen` server-sent events (`text/event-stream`, `Cache-Control: no-cache`, reconnect hint, periodic JSON `data:` frames) while preserving `POST /hello`.
-  - Switched from metadata base configuration to HTML base handling in `index.html` using `<base href="index.php/">`, and updated static asset URLs to absolute root paths (`/demo.js`, `/favicon.ico`) so assets remain stable.
-  - Updated `src/demo.ts` to use base-relative API paths (`"hello"`, `"listen"`) instead of explicit `"index.php/..."` prefixes.
-  - Synced docs to match runtime behavior in `docs/design.md`, `docs/architecture.md`, and updated comments in `src/viewlink.ts`.
+  - Maintained the event delegation and return-handler maps in `src/viewlink.ts`, added SSE listening via `viewlink_listen`, and wired the backend `index.php` routes to serve `POST /hello` and `GET /listen`.
+  - Updated `index.html`, asset URLs, and `src/demo.ts` so base-relative API calls and doc comments reflect the runtime behavior and SSE dispatch contract.
+- 2026-02-12 SSE metadata update:
+  - Emitted `id`, `event: <type>`, and JSON `data` lines for each server-sent message in `index.php`, noted the change in `docs/architecture.md`, and logged that the generated bundles still need rebuilding from the VSCode tasks.
+- 2026-02-13 `good` acknowledgement:
+  - Replaced the prior log entries with this consolidated summary per instructions so the "Prompt log" section now explicitly captures all earlier prompts and their outcomes.
